@@ -29,8 +29,10 @@ import CardHeader from "components/Card/CardHeader.jsx";
 import CardIcon from "components/Card/CardIcon.jsx";
 import CardBody from "components/Card/CardBody.jsx";
 import CardFooter from "components/Card/CardFooter.jsx";
-
+import Divider from '@material-ui/core/Divider'
 import { bugs, website, server } from "variables/general.jsx";
+
+import * as axios from 'axios'
 
 import {
   dailySalesChart,
@@ -41,9 +43,14 @@ import {
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
 
 class Dashboard extends React.Component {
-  state = {
-    value: 0
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      value: 0,
+      analitycs: {}
+    };
+  }
+
   handleChange = (event, value) => {
     this.setState({ value });
   };
@@ -51,12 +58,19 @@ class Dashboard extends React.Component {
   handleChangeIndex = index => {
     this.setState({ value: index });
   };
+
+  componentWillMount = async () => {
+    const analitycs = await axios.get(`https://big-city-server.herokuapp.com/api/v1/ws/analytics/`)
+    this.setState({ analitycs: analitycs.data })
+    console.log(analitycs)
+  }
+
   render() {
     const { classes } = this.props;
     return (
       <div>
         <GridContainer>
-          <GridItem xs={12} sm={6} md={3}>
+          <GridItem xs={12} sm={6} md={6}>
             <Card>
               <CardHeader color="warning" stats icon>
                 <CardIcon color="warning">
@@ -64,7 +78,7 @@ class Dashboard extends React.Component {
                 </CardIcon>
                 <p className={classes.cardCategory}>Umidade Relativa do Ar</p>
                 <h3 className={classes.cardTitle}>
-                  75 <small>%</small>
+                  {(this.state.analitycs.humidity_ || 0).toFixed(2)} <small>%</small>
                 </h3>
               </CardHeader>
               <CardFooter stats>
@@ -72,39 +86,18 @@ class Dashboard extends React.Component {
                   <Danger>
                     <Warning />
                   </Danger>
-                  <a href="#pablo" onClick={e => e.preventDefault()}>
-                    Get more space
-                  </a>
                 </div>
               </CardFooter>
             </Card>
           </GridItem>
-          <GridItem xs={12} sm={6} md={3}>
-            <Card>
-              <CardHeader color="success" stats icon>
-                <CardIcon color="success">
-                  <Icon>directions_car</Icon>
-                </CardIcon>
-                <p className={classes.cardCategory}>Monóxido de Carbono</p>
-                <h3 className={classes.cardTitle}>23 <small>PPM</small></h3>
-              </CardHeader>
-              <CardFooter stats>
-                <div className={classes.stats}>
-                  <DateRange />
-                  Last 24 Hours
-                </div>
-              </CardFooter>
-            </Card>
-          </GridItem>
-          <GridItem xs={12} sm={6} md={3}>
+          <GridItem xs={12} sm={6} md={6}>
             <Card>
               <CardHeader color="danger" stats icon>
                 <CardIcon color="danger">
                   <Icon>whatshot</Icon>
-                  
                 </CardIcon>
                 <p className={classes.cardCategory}>Temperatura Ambiente</p>
-                <h3 className={classes.cardTitle}>27 <small>°c</small></h3> 
+                <h3 className={classes.cardTitle}>{(this.state.analitycs.temperature_ || 0).toFixed(2)} <small>°c</small></h3>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
@@ -114,14 +107,58 @@ class Dashboard extends React.Component {
               </CardFooter>
             </Card>
           </GridItem>
-          <GridItem xs={12} sm={6} md={3}>
+        </GridContainer>
+        
+        <Divider variant="middle" />
+  
+        <h4>Poluentes</h4>
+    
+        <GridContainer>
+          <GridItem xs={12} sm={6} md={4}>
+            <Card>
+              <CardHeader color="success" stats icon>
+                <CardIcon color="success">
+                  <Icon>directions_car</Icon>
+                </CardIcon>
+                <p className={classes.cardCategory}>Monóxido de Carbono</p>
+                <h3 className={classes.cardTitle}>{(this.state.analitycs.co_ || 0).toFixed(1)} <small><small>PPM</small></small></h3>
+              </CardHeader>
+              <CardFooter stats>
+                <div className={classes.stats}>
+                  <DateRange />
+                  Last 24 Hours
+                </div>
+              </CardFooter>
+            </Card>
+          </GridItem>
+        
+          <GridItem xs={12} sm={6} md={4}>
             <Card>
               <CardHeader color="info" stats icon>
                 <CardIcon color="info">
                   <Icon>brightness_low</Icon>
                 </CardIcon>
-                <p className={classes.cardCategory}>Raios Ultravioleta</p>
-                <h3 className={classes.cardTitle}>236 <small>nm</small></h3>
+                <p className={classes.cardCategory}>Fumaça</p>
+            
+                <h3 className={classes.cardTitle}>{(this.state.analitycs.smoke_ || 0).toFixed(2)} <small><small>PPM</small></small></h3>
+              </CardHeader>
+              <CardFooter stats>
+                <div className={classes.stats}>
+                  <Update />
+                  Just Updated
+                </div>
+              </CardFooter>
+            </Card>
+          </GridItem>
+
+          <GridItem xs={12} sm={6} md={4}>
+            <Card>
+              <CardHeader color="info" stats icon>
+                <CardIcon color="rose">
+                  <Icon>cloud_off</Icon>
+                </CardIcon>
+                <p className={classes.cardCategory}>LPG</p>
+                <h3 className={classes.cardTitle}>{(this.state.analitycs.lpg_ || 0).toFixed(2)} <small><small>PPM</small></small></h3>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
@@ -132,6 +169,51 @@ class Dashboard extends React.Component {
             </Card>
           </GridItem>
         </GridContainer>
+        
+        <Divider variant="middle" />
+  
+        <h4>Fontes Externas</h4>
+
+        <GridContainer>
+          <GridItem xs={12} sm={6} md={6}>
+            <Card>
+              <CardHeader color="warning" stats icon>
+                <CardIcon color="warning">
+                  <Icon>opacity</Icon>
+                </CardIcon>
+                <p className={classes.cardCategory}>Umidade Relativa do Ar</p>
+                <h3 className={classes.cardTitle}>
+                  {(this.state.analitycs.humidity_c_ || 0).toFixed(2)} <small>%</small>
+                </h3>
+              </CardHeader>
+              <CardFooter stats>
+                <div className={classes.stats}>
+                    <LocalOffer />
+                    Fonte: <a href="https://www.climatempo.com.br/" target="blank">https://www.climatempo.com.br/</a>
+                </div>
+              </CardFooter>
+            </Card>
+          </GridItem>
+          <GridItem xs={12} sm={6} md={6}>
+            <Card>
+              <CardHeader color="danger" stats icon>
+                <CardIcon color="danger">
+                  <Icon>whatshot</Icon>
+                </CardIcon>
+                <p className={classes.cardCategory}>Temperatura Ambiente</p>
+                <h3 className={classes.cardTitle}>{(this.state.analitycs.temperature_c_ || 0).toFixed(2)} <small>°c</small></h3>
+              </CardHeader>
+              <CardFooter stats>
+                <div className={classes.stats}>
+                <LocalOffer />
+                    Fonte: <a href="https://www.climatempo.com.br/" target="blank">https://www.climatempo.com.br/</a>
+                </div>
+              </CardFooter>
+            </Card>
+          </GridItem>
+         
+        </GridContainer>
+        
         <GridContainer>
           <GridItem xs={12} sm={12} md={4}>
             <Card chart>
