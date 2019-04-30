@@ -302,6 +302,12 @@ class Dashboard extends React.Component {
           </GridItem>
 
         </GridContainer>
+        <a
+          href="https://big-city-server.herokuapp.com/api/v1/ws/data/"
+          target="blank"
+        >
+          <Button>Baixar Dados</Button>
+        </a>
 
         {/* <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
