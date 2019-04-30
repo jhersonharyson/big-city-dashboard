@@ -1,0 +1,9 @@
+.gear-build-right{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.form-gear{
+    display: flex;
+    justify-content: stretch
+}
