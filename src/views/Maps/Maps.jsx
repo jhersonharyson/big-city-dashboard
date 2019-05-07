@@ -1,95 +1,115 @@
 import React from "react";
-import {
-  withScriptjs,
-  withGoogleMap,
-  GoogleMap,
-  Marker
-} from "react-google-maps";
+import Button from "@material-ui/core/Button";
+import * as axios from "axios";
 
-const CustomSkinMap = withScriptjs(
-  withGoogleMap(props => (
-    <GoogleMap
-      defaultZoom={13}
-      defaultCenter={{ lat: 40.748817, lng: -73.985428 }}
-      defaultOptions={{
-        scrollwheel: false,
-        zoomControl: true,
-        styles: [
-          {
-            featureType: "water",
-            stylers: [
-              { saturation: 43 },
-              { lightness: -11 },
-              { hue: "#0088ff" }
-            ]
-          },
-          {
-            featureType: "road",
-            elementType: "geometry.fill",
-            stylers: [
-              { hue: "#ff0000" },
-              { saturation: -100 },
-              { lightness: 99 }
-            ]
-          },
-          {
-            featureType: "road",
-            elementType: "geometry.stroke",
-            stylers: [{ color: "#808080" }, { lightness: 54 }]
-          },
-          {
-            featureType: "landscape.man_made",
-            elementType: "geometry.fill",
-            stylers: [{ color: "#ece2d9" }]
-          },
-          {
-            featureType: "poi.park",
-            elementType: "geometry.fill",
-            stylers: [{ color: "#ccdca1" }]
-          },
-          {
-            featureType: "road",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#767676" }]
-          },
-          {
-            featureType: "road",
-            elementType: "labels.text.stroke",
-            stylers: [{ color: "#ffffff" }]
-          },
-          { featureType: "poi", stylers: [{ visibility: "off" }] },
-          {
-            featureType: "landscape.natural",
-            elementType: "geometry.fill",
-            stylers: [{ visibility: "on" }, { color: "#b8cb93" }]
-          },
-          { featureType: "poi.park", stylers: [{ visibility: "on" }] },
-          {
-            featureType: "poi.sports_complex",
-            stylers: [{ visibility: "on" }]
-          },
-          { featureType: "poi.medical", stylers: [{ visibility: "on" }] },
-          {
-            featureType: "poi.business",
-            stylers: [{ visibility: "simplified" }]
-          }
-        ]
-      }}
-    >
-      <Marker position={{ lat: 40.748817, lng: -73.985428 }} />
-    </GoogleMap>
-  ))
-);
+class Map extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      requests: 200,
+      rerender: true,
+      map: {}
+    };
+  }
+  componentWillMount() {
+    this.setState({ map: this.map });
+  }
+  componentDidMount = async () => {
+    document.data = { data: await this.doRequestMap("temperature") };
+    document.leaflet();
+  };
 
-function Maps({ ...props }) {
-  return (
-    <CustomSkinMap
-      googleMapURL="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"
-      loadingElement={<div style={{ height: `100%` }} />}
-      containerElement={<div style={{ height: `100vh` }} />}
-      mapElement={<div style={{ height: `100%` }} />}
+  doRequestMap = async name => {
+    const request = await axios.get(
+      `https://big-city-server.herokuapp.com/api/v1/ws/data-map/${name}/${
+        this.setState.requests
+      }`
+    );
+    return request.data;
+  };
+
+  map = (
+    <div
+      className="heatmap"
+      id="map-canvas"
+      style={{ height: window.innerHeight * 0.7 }}
     />
   );
+
+  selectMap = async name => {
+    alert(name);
+    document.data = { data: await this.doRequestMap(name) };
+    console.log(document.data.data);
+    const map = (
+      <div
+        className="heatmap"
+        id="map-canvas"
+        style={{ height: window.innerHeight * 0.7 }}
+      />
+    );
+
+    await this.setState({ map: null });
+    await this.setState({ map });
+    document.leaflet();
+
+    //rerender
+
+    // if(name === "temperature"){
+
+    // }else if(name === "humidity"){
+
+    // }else if(name === "co"){
+
+    // }else if(name === "smoke"){
+
+    // }else if(name === "lpg"){
+
+    // }else if(name === "temperature_"){
+
+    // }else if(name === "humidity_"){
+
+    // }
+  };
+  render() {
+    return (
+      <>
+        <div
+          className="heatmap"
+          id="map-canvas"
+          style={{ height: window.innerHeight * 0.7 }}
+        />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-around",
+            marginTop: "5px"
+          }}
+        >
+          <Button className="btn" onClick={_ => this.selectMap("temperature")}>
+            Temperatura
+          </Button>
+          <Button className="btn" onClick={_ => this.selectMap("humidity")}>
+            Humidade
+          </Button>
+          <Button className="btn" onClick={_ => this.selectMap("co")}>
+            CO²
+          </Button>
+          <Button className="btn" onClick={_ => this.selectMap("smoke")}>
+            Fumaça
+          </Button>
+          <Button className="btn" onClick={_ => this.selectMap("lpg")}>
+            LPG
+          </Button>
+          <Button className="btn" onClick={_ => this.selectMap("temperature_")}>
+            Temperatura¹
+          </Button>
+          <Button className="btn" onClick={_ => this.selectMap("humidity_")}>
+            Humidade¹
+          </Button>
+        </div>
+      </>
+    );
+  }
 }
 
-export default Maps;
+export default Map;
