@@ -37,7 +37,7 @@ class Map extends React.Component {
   );
 
   selectMap = async name => {
-    alert(name);
+    // alert(name);
     document.data = { data: await this.doRequestMap(name) };
     console.log(document.data.data);
     const map = (
