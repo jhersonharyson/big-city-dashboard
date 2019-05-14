@@ -183,8 +183,106 @@ const completedTasksChart = {
   }
 };
 
+let SubscribeDataAnalitics = {
+  data: {
+    labels: ["", ""],
+    series: [[27, 30]]
+  },
+  options: {
+    axisX: {
+      showGrid: true
+    },
+    low: 0,
+    high: 50,
+    chartPadding: {
+      top: 0,
+      right: 5,
+      bottom: 0,
+      left: 0
+    }
+  },
+  responsiveOptions: [
+    [
+      "screen and (max-width: 640px)",
+      {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value; //value[0];
+          }
+        }
+      }
+    ]
+  ],
+  animation: {
+    draw: function(data) {
+      if (data.type === "bar") {
+        data.element.animate({
+          opacity: {
+            begin: (data.index + 1) * delays2,
+            dur: durations2,
+            from: 0,
+            to: 1,
+            easing: "ease"
+          }
+        });
+      }
+    }
+  }
+};
+
+let SubscribeDataAnalitics2 = {
+  data: {
+    labels: ["", ""],
+    series: [[27, 30]]
+  },
+  options: {
+    axisX: {
+      showGrid: true
+    },
+    low: 0,
+    high: 50,
+    chartPadding: {
+      top: 0,
+      right: 5,
+      bottom: 0,
+      left: 0
+    }
+  },
+  responsiveOptions: [
+    [
+      "screen and (max-width: 640px)",
+      {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value; //value[0];
+          }
+        }
+      }
+    ]
+  ],
+  animation: {
+    draw: function(data) {
+      if (data.type === "bar") {
+        data.element.animate({
+          opacity: {
+            begin: (data.index + 1) * delays2,
+            dur: durations2,
+            from: 0,
+            to: 1,
+            easing: "ease"
+          }
+        });
+      }
+    }
+  }
+};
+
 module.exports = {
+  SubscribeDataAnalitics,
   dailySalesChart,
   emailsSubscriptionChart,
+  SubscribeDataAnalitics2,
   completedTasksChart
 };

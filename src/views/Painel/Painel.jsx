@@ -29,25 +29,27 @@ import CardHeader from "components/Card/CardHeader.jsx";
 import CardIcon from "components/Card/CardIcon.jsx";
 import CardBody from "components/Card/CardBody.jsx";
 import CardFooter from "components/Card/CardFooter.jsx";
-import Divider from '@material-ui/core/Divider'
-import Button from '@material-ui/core/Button'
-import TextField from '@material-ui/core/TextField'
+import Divider from "@material-ui/core/Divider";
+import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
 
 import { bugs, website, server } from "variables/general.jsx";
 
-import * as axios from 'axios'
+import * as axios from "axios";
 
 import {
   dailySalesChart,
   emailsSubscriptionChart,
+  SubscribeDataAnalitics,
+  SubscribeDataAnalitics2,
   completedTasksChart
 } from "variables/charts.jsx";
 
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
 
-import './Painel.css'
+import "./Painel.css";
 
-import PoluentesLabel from './PoluentesLabel/PoluentesLabel'
+import PoluentesLabel from "./PoluentesLabel/PoluentesLabel";
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -57,7 +59,9 @@ class Dashboard extends React.Component {
       analitycs: {},
       serverData: [],
       gearForm: false,
-      sambleForRequest: 200
+      sambleForRequest: 200,
+      compareTemp: {},
+      compareHumi: {}
     };
   }
 
@@ -72,37 +76,65 @@ class Dashboard extends React.Component {
   handleChangeIndex = index => {
     this.setState({ value: index });
   };
-  
-  dataChart =  (value= [1,2,3], columnName) =>{
-    if(value != [1,2,3]){
-      let series = []
-      value.forEach( data => {
-        series.push(data.sensor[columnName])
+
+  dataChart = (value = [1, 2, 3], columnName) => {
+    if (value != [1, 2, 3]) {
+      let series = [];
+      value.forEach(data => {
+        series.push(data.sensor[columnName]);
       });
-    const labels = new Array(value.length) 
-    
-    return {series: [series], labels}
+      const labels = new Array(value.length);
+
+      return { series: [series], labels };
     }
-     
-    const     labels= ["M", "T", "W", "T", "F", "S", "S"]
-    const     series= [[12, 17, 7, 17, 23, 18, 38]]
-    return {series, labels}
-  }
+
+    const labels = ["M", "T", "W", "T", "F", "S", "S"];
+    const series = [[12, 17, 7, 17, 23, 18, 38]];
+    return { series, labels };
+  };
   analitycs = async (sample = 200) => {
-    const analitycs  = await axios.get(`https://big-city-server.herokuapp.com/api/v1/ws/analytics/` + sample)
-    const serverData = await axios.get('https://big-city-server.herokuapp.com/api/v1/ws/data/')
-    this.setState({ analitycs: analitycs.data, serverData: serverData.data })
-    console.log(analitycs)
-  }
+    const analitycs = await axios.get(
+      `https://big-city-server.herokuapp.com/api/v1/ws/analytics/` + sample
+    );
+    const serverData = await axios.get(
+      "https://big-city-server.herokuapp.com/api/v1/ws/data/"
+    );
+    this.setState({ analitycs: analitycs.data, serverData: serverData.data });
+    console.log(analitycs);
+
+    let compareTemp = { ...SubscribeDataAnalitics };
+    let compareHumi = { ...SubscribeDataAnalitics2 };
+
+    await this.buildChartBarTemp(compareTemp, analitycs);
+    await this.buildChartBarHumi(compareHumi, analitycs);
+  };
+
+  buildChartBarTemp = async (compareTemp, analitycs) => {
+    compareTemp.data.labels = ["Temperatura Sensor", "Temperatura Externa"];
+    compareTemp.data.series = [
+      [analitycs.data.temperature_, analitycs.data.temperature_c_]
+    ];
+
+    await this.setState({ compareTemp });
+  };
+
+  buildChartBarHumi = async (compareHumi, analitycs) => {
+    compareHumi.data.labels = ["Humidade Sensor", "Humidade Externa"];
+    compareHumi.data.series = [
+      [analitycs.data.humidity_, analitycs.data.humidity_c_]
+    ];
+
+    await this.setState({ compareHumi });
+  };
 
   handleSubmitAnalitycs = async () => {
-    this.analitycs(this.state.sambleForRequest)
-    this.setState({ gearForm: false })
-  }
+    this.analitycs(this.state.sambleForRequest);
+    this.setState({ gearForm: false });
+  };
 
   componentWillMount = async () => {
-    this.analitycs()
-  }
+    this.analitycs();
+  };
 
   render() {
     const { classes } = this.props;
@@ -113,16 +145,92 @@ class Dashboard extends React.Component {
             <div className="gear-build-right form-gear">
               {this.state.gearForm ? (
                 <>
-                  <TextField type="number" placeholder="200" variant="outlined" type="number" value={this.state.sambleForRequest} onChange={e => this.handleChangeFormGear(e.target.value)}></TextField>
-                  <Button variant="outlined" size="small" onClick={_ => this.handleSubmitAnalitycs()}><Icon>save</Icon></Button>
-                  <Button variant="outlined" size="small" onClick={_ => this.setState({ gearForm: false })}><Icon>cancel</Icon></Button>
+                  <TextField
+                    type="number"
+                    placeholder="200"
+                    variant="outlined"
+                    type="number"
+                    value={this.state.sambleForRequest}
+                    onChange={e => this.handleChangeFormGear(e.target.value)}
+                  />
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={_ => this.handleSubmitAnalitycs()}
+                  >
+                    <Icon>save</Icon>
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={_ => this.setState({ gearForm: false })}
+                  >
+                    <Icon>cancel</Icon>
+                  </Button>
                 </>
-              ) : <Button onClick={_ => this.setState({ gearForm: true })} variant="outlined" size="large"><Icon>build</Icon></Button>
-              }
+              ) : (
+                <Button
+                  onClick={_ => this.setState({ gearForm: true })}
+                  variant="outlined"
+                  size="large"
+                >
+                  <Icon>build</Icon>
+                </Button>
+              )}
             </div>
           </CardFooter>
         </div>
         <GridContainer>
+          <GridItem xs={12} sm={12} md={6}>
+            <Card chart>
+              <CardHeader color="warning">
+                <ChartistGraph
+                  className="ct-chart"
+                  data={this.state.compareTemp.data}
+                  type="Bar"
+                  options={this.state.compareTemp.options}
+                  responsiveOptions={this.state.compareTemp.responsiveOptions}
+                  listener={this.state.compareTemp.animation}
+                />
+              </CardHeader>
+              <CardBody>
+                <h4 className={classes.cardTitle}>Temperatura</h4>
+                <p className={classes.cardCategory}>
+                  Comparação entre temperaturas do sensor e externo
+                </p>
+              </CardBody>
+              <CardFooter chart>
+                <div className={classes.stats}>
+                  <AccessTime /> Em tempo real
+                </div>
+              </CardFooter>
+            </Card>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={6}>
+            <Card chart>
+              <CardHeader color="danger">
+                <ChartistGraph
+                  className="ct-chart"
+                  data={this.state.compareHumi.data}
+                  type="Bar"
+                  options={{ ...this.state.compareHumi.options, high: 100 }}
+                  responsiveOptions={this.state.compareHumi.responsiveOptions}
+                  listener={this.state.compareHumi.animation}
+                />
+              </CardHeader>
+              <CardBody>
+                <h4 className={classes.cardTitle}>Humidade</h4>
+                <p className={classes.cardCategory}>
+                  Comparação entre humidade do sensor e externo
+                </p>
+              </CardBody>
+              <CardFooter chart>
+                <div className={classes.stats}>
+                  <AccessTime /> Em tempo real
+                </div>
+              </CardFooter>
+            </Card>
+          </GridItem>
           <GridItem xs={12} sm={12} md={12}>
             <Card chart>
               <CardHeader color="success">
@@ -140,17 +248,17 @@ class Dashboard extends React.Component {
                   <span className={classes.successText}>
                     <ArrowUpward className={classes.upArrowCardCategory} /> 12%
                   </span>{" "}
-                  acima, comparado ao dia de ontem 
+                  acima, comparado ao dia de ontem
                 </p>
               </CardBody>
               <CardFooter chart>
                 <div className={classes.stats}>
-                  <AccessTime /> data da ultima atualização 
+                  <AccessTime /> data da ultima atualização
                 </div>
               </CardFooter>
             </Card>
           </GridItem>
-         </GridContainer>
+        </GridContainer>
         <GridContainer>
           <GridItem xs={12} sm={6} md={6}>
             <Card>
@@ -160,14 +268,14 @@ class Dashboard extends React.Component {
                 </CardIcon>
                 <p className={classes.cardCategory}>Umidade Relativa do Ar</p>
                 <h3 className={classes.cardTitle}>
-                  {(this.state.analitycs.humidity_ || 0).toFixed(2)} <small>%</small>
+                  {(this.state.analitycs.humidity_ || 0).toFixed(2)}{" "}
+                  <small>%</small>
                 </h3>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
                   <LocalOffer />
                   {/* {(this.state.analitycs.humidity_ || 0).toFixed(2)}  */}
-
                 </div>
               </CardFooter>
             </Card>
@@ -179,14 +287,14 @@ class Dashboard extends React.Component {
                   <Icon>whatshot</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>Temperatura Ambiente</p>
-                <h3 className={classes.cardTitle}>{(this.state.analitycs.temperature_ || 0).toFixed(2)} <small>°c</small></h3>
+                <h3 className={classes.cardTitle}>
+                  {(this.state.analitycs.temperature_ || 0).toFixed(2)}{" "}
+                  <small>°c</small>
+                </h3>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
                   <LocalOffer />
-
-
-
                 </div>
               </CardFooter>
             </Card>
@@ -205,16 +313,16 @@ class Dashboard extends React.Component {
                   <Icon>directions_car</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>Monóxido de Carbono</p>
-                <h3 className={classes.cardTitle}>{(this.state.analitycs.co_ || 0).toFixed(1)} <small><small>PPM</small></small></h3>
+                <h3 className={classes.cardTitle}>
+                  {(this.state.analitycs.co_ || 0).toFixed(1)}{" "}
+                  <small>
+                    <small>PPM</small>
+                  </small>
+                </h3>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
-
-
                   <PoluentesLabel value={this.state.analitycs.co_} />
-
-
-
                 </div>
               </CardFooter>
             </Card>
@@ -228,14 +336,16 @@ class Dashboard extends React.Component {
                 </CardIcon>
                 <p className={classes.cardCategory}>Fumaça</p>
 
-                <h3 className={classes.cardTitle}>{(this.state.analitycs.smoke_ || 0).toFixed(2)} <small><small>PPM</small></small></h3>
+                <h3 className={classes.cardTitle}>
+                  {(this.state.analitycs.smoke_ || 0).toFixed(2)}{" "}
+                  <small>
+                    <small>PPM</small>
+                  </small>
+                </h3>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
-
-
                   <PoluentesLabel value={this.state.analitycs.smoke_} />
-
                 </div>
               </CardFooter>
             </Card>
@@ -248,11 +358,16 @@ class Dashboard extends React.Component {
                   <Icon>cloud_off</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>LPG</p>
-                <h3 className={classes.cardTitle}>{(this.state.analitycs.lpg_ || 0).toFixed(2)} <small><small>PPM</small></small></h3>
+                <h3 className={classes.cardTitle}>
+                  {(this.state.analitycs.lpg_ || 0).toFixed(2)}{" "}
+                  <small>
+                    <small>PPM</small>
+                  </small>
+                </h3>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
-                <PoluentesLabel value={this.state.analitycs.lpg_} />
+                  <PoluentesLabel value={this.state.analitycs.lpg_} />
                 </div>
               </CardFooter>
             </Card>
@@ -272,13 +387,16 @@ class Dashboard extends React.Component {
                 </CardIcon>
                 <p className={classes.cardCategory}>Umidade Relativa do Ar</p>
                 <h3 className={classes.cardTitle}>
-                  {(this.state.analitycs.humidity_c_ || 0).toFixed(2)} <small>%</small>
+                  {(this.state.analitycs.humidity_c_ || 0).toFixed(2)}{" "}
+                  <small>%</small>
                 </h3>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
                   <LocalOffer />
-                  <a href="https://www.climatempo.com.br/" target="blank">https://www.climatempo.com.br/</a>
+                  <a href="https://www.climatempo.com.br/" target="blank">
+                    https://www.climatempo.com.br/
+                  </a>
                 </div>
               </CardFooter>
             </Card>
@@ -290,17 +408,21 @@ class Dashboard extends React.Component {
                   <Icon>whatshot</Icon>
                 </CardIcon>
                 <p className={classes.cardCategory}>Temperatura Ambiente</p>
-                <h3 className={classes.cardTitle}>{(this.state.analitycs.temperature_c_ || 0).toFixed(2)} <small>°c</small></h3>
+                <h3 className={classes.cardTitle}>
+                  {(this.state.analitycs.temperature_c_ || 0).toFixed(2)}{" "}
+                  <small>°c</small>
+                </h3>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
                   <LocalOffer />
-                  <a href="https://www.climatempo.com.br/" target="blank">https://www.climatempo.com.br/</a>
+                  <a href="https://www.climatempo.com.br/" target="blank">
+                    https://www.climatempo.com.br/
+                  </a>
                 </div>
               </CardFooter>
             </Card>
           </GridItem>
-
         </GridContainer>
         <a
           href="https://big-city-server.herokuapp.com/api/v1/ws/data/"
@@ -363,7 +485,7 @@ class Dashboard extends React.Component {
             </Card>
           </GridItem>
           <GridItem xs={12} sm={12} md={4}> */}
-            {/* <Card chart>
+        {/* <Card chart>
               <CardHeader color="danger">
                 <ChartistGraph
                   className="ct-chart"
